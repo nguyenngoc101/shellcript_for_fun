@@ -8,9 +8,8 @@ DELIMITER=";"
 # Ex: Name;Phone;Email
 # Jonh Smith;12345;joe_smith@yahoo.com
 
-save(){
-    echo $@ >> $DB
-    cat $DB
+get_max_user_id(){
+    echo $(wc -l < $DB)
 }
 
 add(){
@@ -21,8 +20,10 @@ add(){
     read phone
     echo -e "[Email]: \c"
     read email
-    join $DELIMITER $name $phone $email >> $DB
+    local user_id=$(expr `get_max_user_id` + 1)   
+    join $DELIMITER $user_id $name $phone $email >> $DB
     echo "A new user created sucessfully!"
+    echo -e "[Id]: $user_id"
     echo -e "[Name]: $name"
     echo -e "[Phone]: $phone"
     echo -e "[Email]: $email"
@@ -31,16 +32,48 @@ add(){
 print_usr(){
     user=$@
     IFS="$DELIMITER" read -r -a fields <<< $@
-    printf "|%s10\t|%s10\t|%s10\t|\n" ${fields[0]} ${fields[1]} ${fields[2]}
+    printf "|%-25s\t|%-25s\t|%-25s\t|%-25s\t\n" ${fields[0]} ${fields[1]} ${fields[2]} ${fields[3]}
 }
 
 show(){
     echo "Total users: $(wc -l < $DB)"
-    printf "|Name\t|Phone\t|Email|\n"
+    for i in {1..100}; do [ $i -ne 100 ] && echo -e "-\c" || echo ""; done
+    printf "|%-25s\t|%-25s\t|%-25s|%-25s\t\n" "Id" "Name" "Phone" "Email"
+    for i in {1..100}; do [ $i -ne 100 ] && echo -e "-\c" || echo ""; done
     while read user
     do
         print_usr $user
     done < $DB
+}
+
+edit(){
+    show
+    echo "Please choose an Id to edit"
+    echo "Press X to go back to Menu"
+    while :
+    do
+        read user_id
+        if [ $user_id == "X" ]; then break;
+        elif [ "$user_id" -ge 1 -a "$user_id" -le $(wc -l < $DB) ]; then
+            echo "editing user: $user_id"
+            echo -e "[Name]: \c"
+            read name
+            echo -e "[Phone]: \c"
+            read phone
+            echo -e "[Email]: \c"
+            read email
+            local edited_user=$( join $DELIMITER $user_id $name $phone $email )
+            echo "$edited_user"
+            sed -i '1s/.*/replace' $DB
+            echo "The user edited sucessfully!"
+            echo -e "[Id]: $user_id"
+            echo -e "[Name]: $name"
+            echo -e "[Phone]: $phone"
+            echo -e "[Email]: $email"
+        else
+            echo "The Id not exists in Database. Please choose other Ids"
+        fi
+    done
 }
 
 search(){
@@ -69,19 +102,23 @@ print_hits(){
 }
 
 
+helps(){
+    echo "------------------------------"
+    echo "     Address Book System  "
+    echo "------------------------------"
+    echo "Press "0" to list all users."
+    echo "Press "1" to add a new user."
+    echo "Press "2" to edit a user."
+    echo "Press "3" to search."
+    echo "Press "4" to remove a user."
+    echo "Press "5" for helps"
+    echo "Press "6" to exit the program"
+}
 
 main(){
     while :
     do
-        echo "------------------------------"
-        echo "     Address Book System  "
-        echo "------------------------------"
-        echo "Press "0" to list all users."
-        echo "Press "1" to add a new user."
-        echo "Press "2" to edit a user."
-        echo "Press "3" to search."
-        echo "Press "4" to remove a user."
-        echo "Press "5" to exit the program"
+        helps
         read INPUT_STRING
         case $INPUT_STRING in
             0)
@@ -91,7 +128,7 @@ main(){
                 add
                 ;;
             2)
-                echo "edit"
+                edit
                 ;;
             3)
                 echo "remove"
@@ -100,6 +137,9 @@ main(){
                 echo "search"
                 ;;
             5)
+                helps
+                ;;
+            6)
                 echo "exit"
                 exit 0
                 ;;
