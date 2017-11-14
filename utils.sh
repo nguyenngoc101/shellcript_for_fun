@@ -5,7 +5,7 @@ join(){
     delimiter=$1
     shift;
     conv_str=""
-    for ele in $@
+    for ele in "$@"
     do
         [ ! "$conv_str" ] && conv_str=$ele || conv_str=$conv_str$delimiter$ele
     done
@@ -20,5 +20,3 @@ split(){
     IFS="$1" read -r -a fields <<< "$input"
     echo "${fields[@]}"
 }
-
-#split $@

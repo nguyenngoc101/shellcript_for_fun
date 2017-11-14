@@ -1,4 +1,2 @@
-1;Ngoc;01655070096;nguyenngoc101@yahoo.com
-2;Kazim;123456;kazim@gmail.com
-replace
-4;dd;fa;dfadf
+2;long ngo;3445567;long@yahoo.com
+3;trung;45678;trung@gmail.com
