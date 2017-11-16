@@ -9,7 +9,7 @@ DELIMITER=";"
 # Jonh Smith;12345;joe_smith@yahoo.com
 
 get_max_user_id(){
-    echo $(wc -l < $DB)
+    echo $(sed -rn 's/([0-9]+);.*/\1/p' $DB | sort -nr | sed q)
 }
 
 add(){
@@ -162,6 +162,7 @@ main(){
     done
 }
 
+#get_max_user_id
 main $@
 
 
